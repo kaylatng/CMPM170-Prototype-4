@@ -11,7 +11,7 @@ let config = {
       debug: true
     },
   },
-  zoom: 4,
+  zoom: 1,
   scene: [ Mall ],
 }
 
