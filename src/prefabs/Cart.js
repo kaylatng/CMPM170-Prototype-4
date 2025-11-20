@@ -28,13 +28,13 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
     const totalMass = this.baseMass + this.cartMass
     
     // Heavier cart = slower max speed
-    this.maxSpeed = 200 - (this.cartMass * 30)
+    this.maxSpeed = 250 - (this.cartMass * 30)
     
     // Heavier cart = slower acceleration  
-    this.acceleration = 600 - (this.cartMass * 100)
+    this.acceleration = 400 - (this.cartMass * 80)
     
-    // Heavier cart = more momentum
-    this.dragAmount = 600 - (this.cartMass * 150)
+    // Heavier cart = more momentum (less drag = less deceleration)
+    this.dragAmount = 400 - (this.cartMass * 100)
     
 
     this.body.setMaxVelocity(this.maxSpeed, this.maxSpeed)
