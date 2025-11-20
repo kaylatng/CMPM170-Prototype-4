@@ -15,6 +15,11 @@ class Mall extends Phaser.Scene {
 			frameHeight: 32
 		})
 
+		this.load.spritesheet('cart', 'cart.png', {
+			frameWidth: 32,
+			frameHeight: 32
+		})
+
 		this.load.image('tilesetImageInterior', 'interior.png')
 		this.load.image('tilesetImageRoom', 'room.png')
 		this.load.tilemapTiledJSON('tilemapJSON', 'mall.json')
@@ -39,15 +44,20 @@ class Mall extends Phaser.Scene {
 
 		const spawn = map.findObject('Spawns', obj => obj.name === 'slimeSpawn')
 
-		// PLAYER
-		this.player = new Character(this, spawn.x, spawn.y, 'character')
+		// CART and PLAYER
+		this.cart = new Cart(this, spawn.x, spawn.y)
+		this.player = new Character(this, spawn.x, spawn.y, 'chara')
+		
+		// Attach player to cart
+		this.cart.attachPlayer(this.player)
 
-		this.physics.add.collider(this.player, terrainLayer)
-		this.physics.add.collider(this.player, wallLayer)
+		// Cart collides with terrain and walls
+		this.physics.add.collider(this.cart, terrainLayer)
+		this.physics.add.collider(this.cart, wallLayer)
 
 		// CAMERA
 		this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-		this.cameras.main.startFollow(this.player, true, 0.25, 0.25)
+		this.cameras.main.startFollow(this.cart, true, 0.25, 0.25)
 		this.cameras.main.setZoom(2)
 
 		this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -60,6 +70,42 @@ class Mall extends Phaser.Scene {
 			left: Phaser.Input.Keyboard.KeyCodes.A,
 			right: Phaser.Input.Keyboard.KeyCodes.D
 		})
+
+		// Mass adjustment buttons
+		this.createMassUI()
+	}
+
+	createMassUI() {
+		const div = document.createElement('div')
+		div.style.cssText = `
+			position: fixed;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			background: rgba(0, 0, 0, 0.7);
+			padding: 10px;
+			border-radius: 5px;
+			color: white;
+		`
+		
+		const btnStyle = 'padding: 8px 16px; margin: 5px; cursor: pointer;'
+		div.innerHTML = `
+			<button id="decMass" style="${btnStyle}">- Mass</button>
+			<span id="massText">Mass: 2.0</span>
+			<button id="incMass" style="${btnStyle}">+ Mass</button>
+		`
+		
+		document.body.appendChild(div)
+		
+		document.getElementById('decMass').onclick = () => {
+			this.cart.adjustMass(-0.1)
+			document.getElementById('massText').innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
+		}
+		
+		document.getElementById('incMass').onclick = () => {
+			this.cart.adjustMass(0.1)
+			document.getElementById('massText').innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
+		}
 	}
 
 	update() {
@@ -79,6 +125,8 @@ class Mall extends Phaser.Scene {
 
 		dir.normalize()
 
-		this.player.move(dir)
+		// Push the cart instead of moving player directly
+		this.cart.push(dir)
+		this.cart.update()
 	}
 }
