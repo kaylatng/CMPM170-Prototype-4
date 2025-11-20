@@ -14,11 +14,12 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
     
     this.setOrigin(0.5, 0.5)
     this.setScale(1)
-    this.setRotation(-Math.PI / 2) // Start facing down
+    this.setFrame(1) // Start with top-down view for facing down
+    this.setRotation(0) // Start facing down
     
     this.player = null
     this.previousVelocity = new Phaser.Math.Vector2(0, 0)
-    this.targetRotation = -Math.PI / 2 // Start facing down
+    this.targetRotation = 0 // Start facing down
     this.currentFacing = 'down' // Track which direction cart is facing
   }
 
@@ -58,10 +59,9 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
   updatePlayerPosition() {
     if (!this.player) return
     
-    // Position player behind the cart based on cart's rotation
-    // Player should always be behind the cart relative to its facing direction
-    //right now dont have top/bottom facing cart sprites yet, so going top/bottom looks weird
-    const distance = 12
+    // During movement, player follows cart with physics
+    // When stationary and changing direction, cart repositions relative to player
+    const speed = this.body.velocity.length()
     
     // Calculate offset based on cart's current facing direction
     let offsetX = 0
@@ -69,21 +69,30 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
     
     switch(this.currentFacing) {
       case 'down':
-        offsetY = distance
+        offsetY = 12 // Cart in front when pushing down
         break
       case 'up':
-        offsetY = -distance
+        offsetY = -12 // Cart in front when pushing up
         break
       case 'left':
-        offsetX = -distance
+        offsetX = -12 // Cart in front when pushing left
         break
       case 'right':
-        offsetX = distance
+        offsetX = 12 // Cart in front when pushing right
         break
     }
     
-    this.player.x = this.x - offsetX
-    this.player.y = this.y - offsetY
+    if (speed > 10) {
+      // Moving: player smoothly follows cart
+      const targetX = this.x - offsetX
+      const targetY = this.y - offsetY
+      this.player.x += (targetX - this.player.x) * 0.3
+      this.player.y += (targetY - this.player.y) * 0.3
+    } else {
+      // Stationary: cart repositions relative to player (player stays still)
+      this.x = this.player.x + offsetX
+      this.y = this.player.y + offsetY
+    }
   }
 
   push(dir) {
@@ -112,63 +121,86 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
         dir.x * effectiveAccel, 
         dir.y * effectiveAccel
       )
-
-      // Update player facing direction based on input
-      if (dir.x > 0) this.player.facing = 'right'
-      else if (dir.x < 0) this.player.facing = 'left'
-      else if (dir.y < 0) this.player.facing = 'up'
-      else if (dir.y > 0) this.player.facing = 'down'
     } else {
       //set acceleration to 0 so drag takes over
       this.body.setAcceleration(0, 0)
     }
-
-    // Animate player based on cart velocity
-    if (this.body.velocity.length() < 10) {
-      this.player.play(`idle-${this.player.facing}`, true)
-    } else {
-      this.player.play(`run-${this.player.facing}`, true)
-    }
-
-    // Keep player positioned with cart
-    this.updatePlayerPosition()
   }
 
   update() {
+    // Normalize diagonal movement speed
+    const vel = this.body.velocity
+    const speed = vel.length()
+    
+    // If moving diagonally faster than max speed, normalize it
+    if (speed > this.maxSpeed) {
+      this.body.velocity.normalize().scale(this.maxSpeed)
+    }
+    
     // Keep player synced with cart
     if (this.player) {
-      this.updatePlayerPosition()
+      // Determine cart and player facing based on velocity direction
       
-      // Rotate cart to match player facing after character has turned
-      // Only rotate when moving slowly or when direction has stabilized
-      const speed = this.body.velocity.length()
-      
-      if (this.player.facing !== this.currentFacing) {
-        // Character has changed facing direction
-        // Update cart rotation to match after a brief moment
-        this.currentFacing = this.player.facing
+      if (speed > 10) { // Only update facing when actually moving
+        let velocityFacing = this.currentFacing
         
-        // Set target rotation and flip based on facing direction
-        // Cart sprite naturally faces left (0°), adjust rotations accordingly
-        switch(this.player.facing) {
-          case 'left':
-            this.targetRotation = 0 // 0 degrees - natural orientation
-            this.setFlipX(false) // No flip
-            break
-          case 'down':
-            this.targetRotation = -Math.PI / 2 // -90 degrees (or 270°)
-            this.setFlipX(false) // No flip
-            break
-          case 'right':
-            this.targetRotation = 0 // Same as left, but flipped on Y axis (horizontally)
-            this.setFlipX(true) // Flip horizontally to face right
-            break
-          case 'up':
-            this.targetRotation = Math.PI / 2 // 90 degrees
-            this.setFlipX(false) // No flip
-            break
+        // Determine direction based on velocity
+        if (Math.abs(vel.x) > Math.abs(vel.y)) {
+          // Moving more horizontally
+          velocityFacing = vel.x > 0 ? 'right' : 'left'
+        } else {
+          // Moving more vertically
+          velocityFacing = vel.y > 0 ? 'down' : 'up'
+        }
+        
+        // Update player facing to match velocity
+        this.player.facing = velocityFacing
+        
+        // Only update cart sprite if direction changed
+        if (velocityFacing !== this.currentFacing) {
+          this.currentFacing = velocityFacing
+          
+          // Switch between frames based on velocity direction
+          // Frame 0: Side view (for left/right)
+          // Frame 1: Top-down view (for up/down)
+          switch(this.currentFacing) {
+            case 'left':
+              this.setFrame(0) // Side view
+              this.targetRotation = 0
+              this.setFlipX(false)
+              this.setFlipY(false)
+              break
+            case 'right':
+              this.setFrame(0) // Side view
+              this.targetRotation = 0
+              this.setFlipX(true) // Flip horizontally
+              this.setFlipY(false)
+              break
+            case 'down':
+              this.setFrame(1) // Top-down view
+              this.targetRotation = 0
+              this.setFlipX(false)
+              this.setFlipY(true) // Flip vertically so handle faces up (toward player)
+              break
+            case 'up':
+              this.setFrame(1) // Top-down view
+              this.targetRotation = 0
+              this.setFlipX(false)
+              this.setFlipY(false) // No flip - handle faces down (toward player)
+              break
+          }
         }
       }
+      
+      // Animate player based on cart velocity
+      if (speed < 10) {
+        this.player.play(`idle-${this.player.facing}`, true)
+      } else {
+        this.player.play(`run-${this.player.facing}`, true)
+      }
+      
+      // Update player position relative to cart
+      this.updatePlayerPosition()
       
       // Smoothly interpolate to target rotation
       const rotationDiff = this.targetRotation - this.rotation
@@ -180,7 +212,7 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
       }
       
       // Smooth rotation transition
-      this.rotation += adjustedDiff * 0.15 // Adjust speed of rotation here
+      this.rotation += adjustedDiff * 0.15
     }
   }
 

@@ -57,7 +57,7 @@ class Mall extends Phaser.Scene {
 
 		// CAMERA
 		this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-		this.cameras.main.startFollow(this.cart, true, 0.25, 0.25)
+		this.cameras.main.startFollow(this.player, true, 0.25, 0.25)
 		this.cameras.main.setZoom(2)
 
 		this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
