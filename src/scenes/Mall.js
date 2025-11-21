@@ -187,12 +187,12 @@ class Mall extends Phaser.Scene {
 
 			if (type === 'printer') {
 				texture = 'item_printer'
-				weight = 0.5
+				weight = 0.9
 				score = 20
 				multiplier = 1.07
 			} else if (type === 'desklight') {
 				texture = 'item_desklight'
-				weight = 0.1
+				weight = 0.3
 				score = 5
 				multiplier = 1.01
 			}
