@@ -29,12 +29,21 @@ class Mall extends Phaser.Scene {
 		this.load.image('item_monitor', 'monitor.png')
 		this.load.image('item_printer', 'printer.png')
 		this.load.image('item_desklight', 'desklight.png')
+
+    this.load.audio('bgm', 'audio/bgm.mp3')
 		
 		this.load.image('tilesetImage', 'MarketSet_Tileset.png')
 		this.load.tilemapTiledJSON('tilemapJSON', 'grocerystore.json')
 	}
 
 	create() {
+		this.bgm = this.sound.add('bgm', {
+      volume: 0.1,
+      loop: true,
+    });
+		// COMMENT THIS TO MUTE MUSIC
+    this.bgm.play() 
+
 		// TILEMAP
 		const map = this.add.tilemap('tilemapJSON')
 		const tileset = map.addTilesetImage('MarketSet_Tileset', 'tilesetImage')
