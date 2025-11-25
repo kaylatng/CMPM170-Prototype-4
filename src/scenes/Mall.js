@@ -64,12 +64,14 @@ class Mall extends Phaser.Scene {
 
 		this.energySystem = new Energy(this, 100)
 
-		const npcSpawn = map.findObject('Spawns', obj => obj.name === 'npcSpawn')
+		const npcSpawns = map.filterObjects('Spawns', obj => obj.name === 'npcSpawn')
 		this.npcs = this.physics.add.group({ runChildUpdate: true, defaults: {} })
-		if (npcSpawn) {
-			const npc = new Character(this, npcSpawn.x, npcSpawn.y, 'chara')
-      this.npcs.add(npc)
-    }
+		npcSpawns.forEach(spawnPoint => {
+			const x = spawnPoint.x
+			const y = spawnPoint.y
+			const npc = new Character(this, x, y, 'chara')
+			this.npcs.add(npc)
+		})
 
 		// CART and PLAYER
 		this.cart = new Cart(this, spawn.x, spawn.y)
