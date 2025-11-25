@@ -28,7 +28,9 @@ class Mall extends Phaser.Scene {
 		this.load.image('item_monitor', 'monitor.png')
 		this.load.image('item_printer', 'printer.png')
 		this.load.image('item_desklight', 'desklight.png')
+		
 		this.load.image('tilesetImageInterior', 'interior.png')
+		this.load.image('tilesetImageRoom', 'room.png')
 		this.load.image('tilesetImageRoom', 'room.png')
 		this.load.tilemapTiledJSON('tilemapJSON', 'mall.json')
 	}
@@ -52,7 +54,7 @@ class Mall extends Phaser.Scene {
 
 		const spawn = map.findObject('Spawns', obj => obj.name === 'slimeSpawn')
 
-		this.items = this.physics.add.staticGroup()
+		this.items = []
 		this.createItemsFromMap(map)
 		this.coffees = this.physics.add.staticGroup()
 		this.createCoffeeFromMap(map)
@@ -80,7 +82,9 @@ class Mall extends Phaser.Scene {
 		this.physics.add.collider(this.cart, wallLayer)
 
 		//Cart detect with the item
-		this.physics.add.overlap(this.cart, this.items, this.handleItemPickup, null, this)
+		this.items.forEach(item => {
+			this.physics.add.overlap(this.cart, item, this.handleItemPickup, null, this)
+		})
 
 		// Cart gets hit by npcs
 		this.physics.add.collider(this.cart, this.npcs, this.handleNpcHit, null, this)
@@ -129,7 +133,7 @@ class Mall extends Phaser.Scene {
 		const btnStyle = 'padding: 8px 16px; margin: 5px; cursor: pointer;'
 		div.innerHTML = `
 			<button id="decMass" style="${btnStyle}">- Mass</button>
-			<span id="massText">Mass: 2.0</span>
+			<span id="massText">Mass: ${this.cart.getMass().toFixed(1)}</span>
 			<button id="incMass" style="${btnStyle}">+ Mass</button>
 		`
 		
@@ -175,39 +179,16 @@ class Mall extends Phaser.Scene {
 		const itemObjects = map.getObjectLayer('Items')?.objects || []
 
 		itemObjects.forEach(obj => {
-			// random choose
-			const types = ['monitor', 'printer', 'desklight']
-			const type = Phaser.Utils.Array.GetRandom(types)
+			// Random item type
+			const type = Item.getRandomType()
 
-			// item info
-			let texture = 'item_monitor'
-			let weight = 0.3
-			let score = 15
-			let multiplier = 1.05
-
-			if (type === 'printer') {
-				texture = 'item_printer'
-				weight = 0.9
-				score = 20
-				multiplier = 1.07
-			} else if (type === 'desklight') {
-				texture = 'item_desklight'
-				weight = 0.3
-				score = 5
-				multiplier = 1.01
-			}
-
-			// center the item
+			// Center the item
 			const x = obj.x + (obj.width || 0) / 2
 			const y = obj.y - (obj.height || 0) / 2
 
-			const item = this.items.create(x, y, texture)
-
-			item.setData('weight', weight)
-			item.setData('score',  score)
-			item.setData('multiplier', multiplier)
-			item.setData('type',   type)
-
+			// Create Item prefab
+			const item = new Item(this, x, y, type)
+			this.items.push(item)
 		})
 	}
 	createCoffeeFromMap(map) {
@@ -225,14 +206,16 @@ class Mall extends Phaser.Scene {
 	}
 
 	handleItemPickup(cart, item) {
-		const weight = item.getData('weight')
-		const score = item.getData('score')
-		const multiplier = item.getData('multiplier')
+		// Use Item prefab methods instead of getData
+		const weight = item.getWeight()
+		const score = item.getScore()
+		const multiplier = item.getMultiplier()
+		const type = item.getType()
 
 		// Track cart inventory
 		if (!this.cart.inventory) this.cart.inventory = []
 		this.cart.inventory.push({
-			type: item.getData('type'),
+			type,
 			score,
 			multiplier,
 			weight

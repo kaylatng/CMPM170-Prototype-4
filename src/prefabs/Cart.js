@@ -7,7 +7,7 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true)
     
-    this.cartMass = 0.5
+    this.cartMass = 1.0
     this.baseMass = 1
     
     this.updatePhysicsProperties()
