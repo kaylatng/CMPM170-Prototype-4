@@ -9,6 +9,7 @@ class Mall extends Phaser.Scene {
 		this.coffeeActive = false
 		this.coffeeTimer = 0
 		this.coffeeMassBonus = 0
+		this.energySystem = null
 	}
 
 	preload() {
@@ -51,6 +52,8 @@ class Mall extends Phaser.Scene {
 		this.createItemsFromMap(map)
 		this.coffees = this.physics.add.staticGroup()
 		this.createCoffeeFromMap(map)
+
+		this.energySystem = new Energy(this, 100)
 
 		const npcSpawn = map.findObject('Spawns', obj => obj.name === 'npcSpawn')
 		this.npcs = this.physics.add.group()
@@ -284,6 +287,9 @@ class Mall extends Phaser.Scene {
 	handleCoffeePickup(cart, coffee) {
 		const massBoost = coffee.getData('massBoost') || 0.5
 
+		const energyBoost = 30 // gives 30 energy per coffee
+		this.energySystem.addEnergy(energyBoost)
+
 		// timer reset when already have coffee
 		if (this.coffeeActive) {
 			this.coffeeTimer = 10
@@ -342,6 +348,10 @@ class Mall extends Phaser.Scene {
 			})
 		}*/
 
+		if (this.energySystem) {
+			this.energySystem.update(this.game.loop.delta)
+		}
+
 		// Coffee buff countdown
 		if (this.coffeeActive) {
 			this.coffeeTimer -= this.game.loop.delta / 1000  // ms → seconds
@@ -363,8 +373,11 @@ class Mall extends Phaser.Scene {
 				}
 			}
 		}
-			// Push the cart instead of moving player directly
-			this.cart.push(dir)
-			this.cart.update()
+
+		const speedMultiplier = this.energySystem ? this.energySystem.getSpeedMultiplier() : 1
+		
+		// Push the cart instead of moving player directly
+		this.cart.push(dir)
+		this.cart.update()
 	}
 }
