@@ -2,7 +2,7 @@
 class Mall extends Phaser.Scene {
 	constructor() {
 		super('mallScene')
-		
+
 	}
 	init() {
 		this.VEL = 100
@@ -31,7 +31,7 @@ class Mall extends Phaser.Scene {
 		this.load.image('item_desklight', 'desklight.png')
 
     this.load.audio('bgm', 'audio/bgm.mp3')
-		
+
 		this.load.image('tilesetImage', 'MarketSet_Tileset.png')
 		this.load.tilemapTiledJSON('tilemapJSON', 'grocerystore.json')
 	}
@@ -42,7 +42,7 @@ class Mall extends Phaser.Scene {
       loop: true,
     });
 		// COMMENT THIS TO MUTE MUSIC
-    this.bgm.play() 
+    this.bgm.play()
 
 		// TILEMAP
 		const map = this.add.tilemap('tilemapJSON')
@@ -65,11 +65,11 @@ class Mall extends Phaser.Scene {
 		this.energySystem = new Energy(this, 100)
 
 		const npcSpawn = map.findObject('Spawns', obj => obj.name === 'npcSpawn')
-		this.npcs = this.physics.add.group()
+		this.npcs = this.physics.add.group({ runChildUpdate: true, defaults: {} })
 		if (npcSpawn) {
-			const npc = this.npcs.create(npcSpawn.x, npcSpawn.y, 'image_npc')
-			npc.setCollideWorldBounds(true)
-		}
+			const npc = new Character(this, npcSpawn.x, npcSpawn.y, 'chara')
+      this.npcs.add(npc)
+    }
 
 		// CART and PLAYER
 		this.cart = new Cart(this, spawn.x, spawn.y)
@@ -77,7 +77,7 @@ class Mall extends Phaser.Scene {
 
 		// record mass for coffee
 		this.baseCartMass = this.cart.getMass()
-		
+
 		// Attach player to cart
 		this.cart.attachPlayer(this.player)
 
@@ -88,6 +88,7 @@ class Mall extends Phaser.Scene {
 		// Cart detect with the item
 		this.items.forEach(item => {
 			this.physics.add.overlap(this.cart, item, this.handleItemPickup, null, this)
+		  this.physics.add.collider(this.npcs, item, this.handleNpcItemPickup, null, this)
 		})
 
 		// Cart gets hit by npcs
@@ -133,21 +134,21 @@ class Mall extends Phaser.Scene {
 			border-radius: 5px;
 			color: white;
 		`
-		
+
 		const btnStyle = 'padding: 8px 16px; margin: 5px; cursor: pointer;'
 		div.innerHTML = `
 			<button id="decMass" style="${btnStyle}">- Mass</button>
 			<span id="massText">Mass: ${this.cart.getMass().toFixed(1)}</span>
 			<button id="incMass" style="${btnStyle}">+ Mass</button>
 		`
-		
+
 		document.body.appendChild(div)
-		
+
 		document.getElementById('decMass').onclick = () => {
 			this.cart.adjustMass(-0.1)
 			document.getElementById('massText').innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
-		
+
 		document.getElementById('incMass').onclick = () => {
 			this.cart.adjustMass(0.1)
 			document.getElementById('massText').innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
@@ -197,7 +198,7 @@ class Mall extends Phaser.Scene {
 	}
 	createCoffeeFromMap(map) {
 		const coffeeObjects = map.getObjectLayer('Coffee')?.objects || []
-		
+
 		coffeeObjects.forEach(obj => {
 			const x = obj.x + (obj.width || 0) / 2
 			const y = obj.y - (obj.height || 0) / 2
@@ -248,6 +249,10 @@ class Mall extends Phaser.Scene {
 			massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
 
+		item.destroy()
+	}
+
+	handleNpcItemPickup(item, _npc) {
 		item.destroy()
 	}
 
@@ -384,7 +389,7 @@ class Mall extends Phaser.Scene {
 		}
 
 		const speedMultiplier = this.energySystem ? this.energySystem.getSpeedMultiplier() : 1
-		
+
 		// Push the cart instead of moving player directly
 		this.cart.push(dir)
 		this.cart.update()
