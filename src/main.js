@@ -8,7 +8,7 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true
+      debug: false // true
     },
   },
   zoom: 1,
