@@ -16,7 +16,7 @@ class Mall extends Phaser.Scene {
 
 		this.load.spritesheet('chara', 'chara.png', {
 			frameWidth: 16,
-			frameHeight: 32
+			frameHeight: 24
 		})
 
 		this.load.spritesheet('cart', 'cart.png', {
@@ -29,25 +29,18 @@ class Mall extends Phaser.Scene {
 		this.load.image('item_printer', 'printer.png')
 		this.load.image('item_desklight', 'desklight.png')
 		
-		this.load.image('tilesetImageInterior', 'interior.png')
-		this.load.image('tilesetImageRoom', 'room.png')
-		this.load.image('tilesetImageRoom', 'room.png')
-		this.load.tilemapTiledJSON('tilemapJSON', 'mall.json')
+		this.load.image('tilesetImage', 'MarketSet_Tileset.png')
+		this.load.tilemapTiledJSON('tilemapJSON', 'grocerystore.json')
 	}
 
 	create() {
 		// TILEMAP
 		const map = this.add.tilemap('tilemapJSON')
-		const tileset = map.addTilesetImage('interior', 'tilesetImageInterior')
-		const tilesetRoom = map.addTilesetImage('room', 'tilesetImageRoom')
+		const tileset = map.addTilesetImage('MarketSet_Tileset', 'tilesetImage')
 
-		map.createLayer('Outside', tileset, 0, 0)
 		const floorLayer = map.createLayer('Floor', tileset, 0, 0)
-		const floorLayer2 = map.createLayer('Floor Decor', tileset, 0, 0)
-		const wallLayer = map.createLayer('Walls', tilesetRoom, 0, 0)
-		const wallLayer2 = map.createLayer('Wall Decor', tileset, 0, 0)
+		const wallLayer = map.createLayer('Walls', tileset, 0, 0)
 		const terrainLayer = map.createLayer('Terrain', tileset, 0, 0)
-		const terrainLayer2 = map.createLayer('Terrain2', tileset, 0, 0)
 
 		terrainLayer.setCollisionByProperty({ collides: true })
 		wallLayer.setCollisionByProperty({ collides: true })
@@ -59,7 +52,6 @@ class Mall extends Phaser.Scene {
 		this.coffees = this.physics.add.staticGroup()
 		this.createCoffeeFromMap(map)
 
-		//Enemy spawn
 		const npcSpawn = map.findObject('Spawns', obj => obj.name === 'npcSpawn')
 		this.npcs = this.physics.add.group()
 		if (npcSpawn) {
@@ -81,7 +73,7 @@ class Mall extends Phaser.Scene {
 		this.physics.add.collider(this.cart, terrainLayer)
 		this.physics.add.collider(this.cart, wallLayer)
 
-		//Cart detect with the item
+		// Cart detect with the item
 		this.items.forEach(item => {
 			this.physics.add.overlap(this.cart, item, this.handleItemPickup, null, this)
 		})
