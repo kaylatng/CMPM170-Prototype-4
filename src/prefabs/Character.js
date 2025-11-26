@@ -8,7 +8,7 @@ class Character extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true)
 
     this.speed = 100
-    this.acceleration = 400
+    this.acceleration = 800
     this.body.setMaxVelocity(this.speed, this.speed)
     this.body.setDrag(600, 600)
 
@@ -120,7 +120,9 @@ class Character extends Phaser.Physics.Arcade.Sprite {
       } else {
         this.move(delta)
       }
+    } else {
+      this.move(new Phaser.Math.Vector2())
     }
-    this.body.velocity.scale(0.98);
+    this.body.velocity.scale(0.95);
   }
 }
