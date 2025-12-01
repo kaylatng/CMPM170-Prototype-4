@@ -69,7 +69,7 @@ class Mall extends Phaser.Scene {
 		npcSpawns.forEach(spawnPoint => {
 			const x = spawnPoint.x
 			const y = spawnPoint.y
-			const npc = new Character(this, x, y, 'chara')
+			const npc = new Character(this, x, y, 'chara', 'enemy')
 			this.npcs.add(npc)
 		})
 

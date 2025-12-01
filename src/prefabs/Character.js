@@ -1,5 +1,5 @@
 class Character extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, texture) {
+  constructor(scene, x, y, texture, type) {
     super(scene, x, y, texture)
 
     scene.add.existing(this)
@@ -7,6 +7,7 @@ class Character extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true)
 
+    this.type = type || 'default'
     this.speed = 100
     this.acceleration = 800
     this.body.setMaxVelocity(this.speed, this.speed)
@@ -17,48 +18,77 @@ class Character extends Phaser.Physics.Arcade.Sprite {
     this.body.setOffset(0, 0)
 
     this.createAnimations(scene)
+    console.log('Created animations for type:', this.type)
+    console.log('idle-down exists?', scene.anims.exists(`${this.type}-idle-down`))
     this.waypoint = null
     this.destination = null
   }
 
   createAnimations(scene) {
-    if (scene.anims.exists('idle-down')) return;
+    if (scene.anims.exists(`${this.type}-idle-down`)) return;
 
-    const idleFrames = {
-      'down': 52,
-      'down-left': 53,
-      'left': 54,
-      'up-left': 55,
-      'up': 48,
-      'up-right': 49,
-      'right': 50,
-      'down-right': 51
+    const framesets = {
+      default: {
+        idle: {
+          'down': 52,
+          'down-left': 53,
+          'left': 54,
+          'up-left': 55,
+          'up': 48,
+          'up-right': 49,
+          'right': 50,
+          'down-right': 51
+        },
+        run: {
+          'down': [44, 60],
+          'down-left': [45, 61],
+          'left': [46, 62],
+          'up-left': [47, 63],
+          'up': [40, 56],
+          'up-right': [41, 57],
+          'right': [42, 58],
+          'down-right': [43, 59]
+        }
+      },
+      enemy: {
+        idle: {
+          'down': 84,
+          'down-left': 85,
+          'left': 86,
+          'up-left': 87,
+          'up': 80,
+          'up-right': 81,
+          'right': 82,
+          'down-right': 83
+        },
+        run: {
+          'down': [76, 92],
+          'down-left': [77, 93],
+          'left': [78, 94],
+          'up-left': [79, 95],
+          'up': [72, 88],
+          'up-right': [73, 89],
+          'right': [74, 90],
+          'down-right': [75, 91]
+        }
+      }
     }
 
-    Object.entries(idleFrames).forEach(([dir, frame]) => {
+    const frames = framesets[this.type] || framesets.default
+
+    Object.entries(frames.idle).forEach(([dir, frame]) => {
       scene.anims.create({
-        key: `idle-${dir}`,
+        key: `${this.type}-idle-${dir}`,
         frames: scene.anims.generateFrameNumbers('chara', { frames: [frame] }),
         frameRate: 6,
         repeat: -1
       })
     })
 
-    const runFrames = {
-      'down': [44, 60],
-      'down-left': [45, 61],
-      'left': [46, 62],
-      'up-left': [47, 63],
-      'up': [40, 56],
-      'up-right': [41, 57],
-      'right': [42, 58],
-      'down-right': [43, 59]
-    }
-
-    Object.entries(runFrames).forEach(([dir, frames]) => {
+    Object.entries(frames.run).forEach(([dir, frameArray]) => {
       scene.anims.create({
-        key: `run-${dir}`,
-        frames: scene.anims.generateFrameNumbers('chara', { frames }),
+        key: `${this.type}-run-${dir}`,
+        frames: scene.anims.generateFrameNumbers('chara', { frames: frameArray }),
         frameRate: 8,
         repeat: -1
       })
@@ -87,16 +117,16 @@ class Character extends Phaser.Physics.Arcade.Sprite {
       this.facing = 'down'
     }
 
-    // console.log('Direction:', dir, 'Facing:', this.facing, 'Velocity:', this.body.velocity.length())
-
     if (dir.x === 0 && dir.y === 0) {
-      this.play(`idle-${this.facing}`, true)
+      this.play(`${this.type}-idle-${this.facing}`, true)
     } else {
-      this.play(`run-${this.facing}`, true)
+      this.play(`${this.type}-run-${this.facing}`, true)
     }
   }
 
   update() {
+    if (!this.body || !this.scene) return
+
     if (!this.destination && Math.random() < 1 / 60 / 3) {
       let item = Phaser.Utils.Array.GetRandom(this.scene.items.filter(i => i.body))
       if (item) this.destination = new Phaser.Math.Vector2(item.body)

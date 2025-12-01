@@ -194,9 +194,9 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
       
       // Animate player based on cart velocity
       if (speed < 10) {
-        this.player.play(`idle-${this.player.facing}`, true)
+        this.player.play(`default-idle-${this.player.facing}`, true)
       } else {
-        this.player.play(`run-${this.player.facing}`, true)
+        this.player.play(`default-run-${this.player.facing}`, true)
       }
       
       // Update player position relative to cart
