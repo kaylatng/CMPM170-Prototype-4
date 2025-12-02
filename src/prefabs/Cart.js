@@ -26,6 +26,17 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
     this.currentFacing = 'down' // Track which direction cart is facing
   }
 
+  updateCartUI() {
+    let frame = this.filled ? 2 : 0;
+    if (this.currentFacing === 'up' || this.currentFacing === 'down')
+    {
+      frame += 1;
+    }
+
+    this.setFrame(frame);
+    
+  }
+
   updatePhysicsProperties() {
     // Physics scale with mass
     const totalMass = this.baseMass + this.cartMass
@@ -42,26 +53,23 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
 
     this.body.setMaxVelocity(this.maxSpeed, this.maxSpeed)
     this.body.setDrag(this.dragAmount, this.dragAmount)
+    this.updateCartUI();
   }
 
   setMass(mass) {
     this.cartMass = Math.max(0, mass)
+    // Update filled state based on whether cart has items (mass above base)
+    this.filled = this.cartMass > this.baseMass
     this.updatePhysicsProperties()
-    if (this.cartMass > 1.0) {
-      this.filled = true
-    } else {
-      this.filled = false
-    }
+    this.updateCartUI();
   }
 
   adjustMass(delta) {
     this.cartMass = Math.max(0, this.cartMass + delta)
+    // Update filled state based on whether cart has items (mass above base)
+    this.filled = this.cartMass > this.baseMass
     this.updatePhysicsProperties()
-    if (this.cartMass > 1.0) {
-      this.filled = true
-    } else {
-      this.filled = false
-    }
+    this.updateCartUI();
   }
 
   attachPlayer(player) {
@@ -111,6 +119,21 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
   push(dir, speedMultiplier = 1) {
     if (!this.player) return
 
+    // Energy reduces the "added mass" from items
+    // speedMultiplier: 1 = no reduction, 2 = 100% reduction of added mass
+    // At full energy (multiplier=2), cart feels like base mass only
+    const addedMass = this.cartMass - this.baseMass
+    const reductionPercent = Math.min(1, speedMultiplier - 1) // 0 to 1
+    const effectiveMass = this.baseMass + addedMass * (1 - reductionPercent)
+    
+    // Recalculate physics with effective mass (same formulas as updatePhysicsProperties)
+    const effectiveMaxSpeed = 250 - (effectiveMass * 30)
+    const effectiveAcceleration = 400 - (effectiveMass * 80)
+    const effectiveDrag = 400 - (effectiveMass * 100)
+    
+    // Apply the boosted physics
+    this.body.setMaxVelocity(effectiveMaxSpeed, effectiveMaxSpeed)
+    this.body.setDrag(effectiveDrag, effectiveDrag)
 
     const hasInput = dir.length() > 0
     
@@ -127,12 +150,12 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
           turnResistance = Phaser.Math.Linear(0.3, 1.0, (dot + 1) / 1.5)
         }
       }
-      // Apply acceleration with turn resistance
-      const effectiveAccel = this.acceleration * turnResistance * speedMultiplier
+      // Apply acceleration with turn resistance (using effective acceleration)
+      const finalAccel = effectiveAcceleration * turnResistance
       
       this.body.setAcceleration(
-        dir.x * effectiveAccel, 
-        dir.y * effectiveAccel
+        dir.x * finalAccel, 
+        dir.y * finalAccel
       )
     } else {
       //set acceleration to 0 so drag takes over
@@ -178,47 +201,31 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
           // Frame 1: Top-down view (for up/down)
           switch(this.currentFacing) {
             case 'left':
-              if (this.filled) {
-                this.setFrame(2) // Side view filled
-              } else {
-                this.setFrame(0) // Side view empty
-              }
+
               this.targetRotation = 0
               this.setFlipX(false)
               this.setFlipY(false)
               break
             case 'right':
-              if (this.filled) {
-                this.setFrame(2) // Side view filled
-              } else {
-                this.setFrame(0) // Side view empty
-              }
               this.targetRotation = 0
               this.setFlipX(true) // Flip horizontally
               this.setFlipY(false)
               break
             case 'down':
-              if (this.filled) {
-                this.setFrame(3)
-              } else {
-                this.setFrame(1)
-              }
+
               this.targetRotation = 0
               this.setFlipX(false)
               this.setFlipY(true) // Flip vertically so handle faces up (toward player)
               break
             case 'up':
-              if (this.filled) {
-                this.setFrame(3)
-              } else {
-                this.setFrame(1)
-              }
+
               this.targetRotation = 0
               this.setFlipX(false)
               this.setFlipY(false) // No flip - handle faces down (toward player)
               break
           }
         }
+        this.updateCartUI();
       }
       
       // Animate player based on cart velocity
@@ -244,6 +251,7 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
       this.rotation += adjustedDiff * 0.15
     }
   }
+
 
   getMass() {
     return this.cartMass

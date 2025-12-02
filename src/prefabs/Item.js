@@ -3,19 +3,19 @@ class Item extends Phaser.Physics.Arcade.Sprite {
     const itemConfig = {
       monitor: {
         texture: 'item_monitor',
-        weight: 0.3,
+        weight: 0.15,
         score: 15,
         multiplier: 1.05
       },
       printer: {
         texture: 'item_printer',
-        weight: 0.7,
+        weight: 0.45,
         score: 20,
         multiplier: 1.07
       },
       desklight: {
         texture: 'item_desklight',
-        weight: 0.3,
+        weight: 0.15,
         score: 5,
         multiplier: 1.01
       }
