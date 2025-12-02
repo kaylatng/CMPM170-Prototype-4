@@ -125,7 +125,7 @@ class Mall extends Phaser.Scene {
 		this.createMassUI()
 		// Score UI
 		this.score = 0
-		this.createScoreUI()
+		// this.createScoreUI()
 	}
 
 	createMassUI() {
@@ -160,32 +160,32 @@ class Mall extends Phaser.Scene {
 			document.getElementById('massText').innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
 	}
-	createScoreUI() {
-		const canvas = this.game.canvas
+	// createScoreUI() {
+	// 	const canvas = this.game.canvas
 
-		const scoreDiv = document.createElement('div')
-		scoreDiv.id = 'scoreUI'
-		scoreDiv.style.cssText = `
-			margin: 8px auto 0;
-			text-align: center;
-			font-family: sans-serif;
-			font-size: 18px;
-			color: white;
-		`
-		const container = document.createElement('div')
-		container.style.cssText = `
-			width: ${canvas.width}px;
-			margin: 0 auto;
-			background: rgba(0, 0, 0, 0.7);
-			padding: 6px 0;
-			box-sizing: border-box;
-		`
-		container.innerHTML = `Score: <span id="scoreValue">0</span>`
+	// 	const scoreDiv = document.createElement('div')
+	// 	scoreDiv.id = 'scoreUI'
+	// 	scoreDiv.style.cssText = `
+	// 		margin: 8px auto 0;
+	// 		text-align: center;
+	// 		font-family: sans-serif;
+	// 		font-size: 18px;
+	// 		color: white;
+	// 	`
+	// 	const container = document.createElement('div')
+	// 	container.style.cssText = `
+	// 		width: ${canvas.width}px;
+	// 		margin: 0 auto;
+	// 		background: rgba(0, 0, 0, 0.7);
+	// 		padding: 6px 0;
+	// 		box-sizing: border-box;
+	// 	`
+	// 	container.innerHTML = `Score: <span id="scoreValue">0</span>`
 
-		scoreDiv.appendChild(container)
+	// 	scoreDiv.appendChild(container)
 
-		canvas.parentNode.insertBefore(scoreDiv, canvas.nextSibling)
-	}
+	// 	canvas.parentNode.insertBefore(scoreDiv, canvas.nextSibling)
+	// }
 	createItemsFromMap(map) {
 		const itemObjects = map.getObjectLayer('Items')?.objects || []
 
@@ -241,11 +241,12 @@ class Mall extends Phaser.Scene {
 		this.score += Math.floor(score * totalMultiplier)
 
 		// update score
-		const scoreSpan = document.getElementById('scoreValue')
-		if (scoreSpan) {
-			scoreSpan.textContent = this.score
-		}
+		// const scoreSpan = document.getElementById('scoreValue')
+		// if (scoreSpan) {
+		// 	scoreSpan.textContent = this.score
+		// }
 
+		this.game.events.emit('updateScore', this.score)
 		// Adjust cart mass
 		cart.adjustMass(weight)
 
@@ -294,10 +295,11 @@ class Mall extends Phaser.Scene {
 		})
 
 		// update UI
-		const scoreSpan = document.getElementById('scoreValue')
-		if (scoreSpan) {
-			scoreSpan.textContent = this.score
-		}
+		// const scoreSpan = document.getElementById('scoreValue')
+		// if (scoreSpan) {
+		// 	scoreSpan.textContent = this.score
+		// }
+		this.game.events.emit('updateScore', this.score)
 
 		const massText = document.getElementById('massText')
 		if (massText) {

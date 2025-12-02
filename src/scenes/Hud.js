@@ -68,9 +68,21 @@ class HUD extends Phaser.Scene {
 		})
 		this.energyText.setOrigin(0.5, 0.5)
 		this.energyText.setDepth(1003)
+
+    this.scoreText = this.add.text(barX, barY + 40, 'Score: 0', {
+			fontSize: '20px',
+			fontFamily: 'Arial, sans-serif',
+			color: '#ffffff',
+			stroke: '#000000',
+			strokeThickness: 4,
+			fontStyle: 'bold'
+		})
+		this.scoreText.setOrigin(0.5, 0.5)
+		this.scoreText.setDepth(1003)
 		
 		this.game.events.on('updateEnergy', this.updateEnergyBar, this)
 		this.game.events.on('energyBoost', this.showEnergyBoost, this)
+    this.game.events.on('updateScore', this.updateScore, this)
 	}
 
 	updateEnergyBar(currentEnergy, maxEnergy) {
@@ -137,6 +149,19 @@ class HUD extends Phaser.Scene {
 			onComplete: () => {
 				popup.destroy()
 			}
+		})
+	}
+
+  updateScore(score) {
+		this.scoreText.setText(`Score: ${score}`)
+		
+		// Add a little bounce animation when score changes
+		this.tweens.add({
+			targets: this.scoreText,
+			scale: 1.2,
+			duration: 150,
+			yoyo: true,
+			ease: 'Back.easeOut'
 		})
 	}
 
