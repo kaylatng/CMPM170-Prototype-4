@@ -30,6 +30,9 @@ class Mall extends Phaser.Scene {
 		this.load.image('item_printer', 'printer.png')
 		this.load.image('item_desklight', 'desklight.png')
 
+		this.load.image('energyBarBorder', 'valuebar.png')
+		this.load.image('energyBar', 'valuefull.png')
+
     this.load.audio('bgm', 'audio/bgm.mp3')
 
 		this.load.image('tilesetImage', 'MarketSet_Tileset.png')
@@ -63,6 +66,7 @@ class Mall extends Phaser.Scene {
 		this.createCoffeeFromMap(map)
 
 		this.energySystem = new Energy(this, 100)
+		this.scene.launch('hudScene')
 
 		const npcSpawns = map.filterObjects('Spawns', obj => obj.name === 'npcSpawn')
 		this.npcs = this.physics.add.group({ runChildUpdate: true, defaults: {} })

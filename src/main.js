@@ -12,7 +12,7 @@ let config = {
     },
   },
   zoom: 1,
-  scene: [ Mall ],
+  scene: [ Mall, HUD ],
 }
 
 const game = new Phaser.Game(config)

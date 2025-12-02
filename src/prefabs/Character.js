@@ -18,8 +18,7 @@ class Character extends Phaser.Physics.Arcade.Sprite {
     this.body.setOffset(0, 0)
 
     this.createAnimations(scene)
-    console.log('Created animations for type:', this.type)
-    console.log('idle-down exists?', scene.anims.exists(`${this.type}-idle-down`))
+
     this.waypoint = null
     this.destination = null
   }
