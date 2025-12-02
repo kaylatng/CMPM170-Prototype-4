@@ -2,7 +2,7 @@ class Energy {
 	constructor(scene, maxEnergy = 100) {
 		this.scene = scene
 		this.maxEnergy = maxEnergy
-		this.currentEnergy = 5 // 100
+		this.currentEnergy = 100
 		this.energyDecayRate = 5 // energy lost per second
 		this.speedBoostPerEnergy = 0.01 // speed multiplier per energy point
 		

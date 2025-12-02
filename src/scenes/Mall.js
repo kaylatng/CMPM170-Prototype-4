@@ -36,6 +36,7 @@ class Mall extends Phaser.Scene {
     this.load.audio('bgm', 'audio/bgm.mp3')
     this.load.audio('pickup', 'audio/pickup.wav')
     this.load.audio('powerup', 'audio/coffee.wav')
+    this.load.audio('hit', 'audio/hit.wav')
 
 		this.load.image('tilesetImage', 'MarketSet_Tileset.png')
 		this.load.tilemapTiledJSON('tilemapJSON', 'grocerystore.json')
@@ -46,10 +47,16 @@ class Mall extends Phaser.Scene {
       volume: 0.1,
       loop: true,
     });
+		this.bgm.setRate(1)
 		// COMMENT THIS TO MUTE MUSIC
     this.bgm.play()
 
 		this.pickup = this.sound.add('pickup', {
+      volume: 0.2,
+      loop: false,
+    });
+
+		this.hit = this.sound.add('hit', {
       volume: 0.2,
       loop: false,
     });
@@ -134,9 +141,14 @@ class Mall extends Phaser.Scene {
 			left: Phaser.Input.Keyboard.KeyCodes.A,
 			right: Phaser.Input.Keyboard.KeyCodes.D
 		})
+		this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+		this.spaceKey.on('down', () => {
+			this.scene.start('mallScene');
+			this.bgm.stop()
+		});
 
 		// Mass adjustment buttons
-		this.createMassUI()
+		// this.createMassUI()
 		// Score UI
 		this.score = 0
 		this.gameEnd = false
@@ -258,6 +270,7 @@ class Mall extends Phaser.Scene {
 		// this.updateScoreUI() if you re-enable it later
 		this.game.events.emit('updateScore', this.score)
 		this.game.events.emit('massIncrease')
+		this.game.events.emit('updateItemCount')
 
 		// Adjust cart mass
 		cart.adjustMass(weight)
@@ -297,7 +310,7 @@ class Mall extends Phaser.Scene {
 
 		// Remove
 		const [lostItem] = this.cart.inventory.splice(maxIndex, 1)
-
+		this.dropItemOnGround(lostItem, this.player.x, this.player.y)
 		// lost that items score
 		this.score = Math.max(0, this.score - lostItem.score)
 
@@ -308,18 +321,29 @@ class Mall extends Phaser.Scene {
 		this.cart.inventory.forEach(it => {
 			it.multiplier = 1
 		})
-
-		// update UI
-		// const scoreSpan = document.getElementById('scoreValue')
-		// if (scoreSpan) {
-		// 	scoreSpan.textContent = this.score
-		// }
 		this.game.events.emit('updateScore', this.score)
 
 		const massText = document.getElementById('massText')
 		if (massText) {
 			massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
+	}
+	dropItemOnGround(itemData, x, y) {
+		const dropped = new Item(this, x, y, itemData.type)
+		dropped.setVisible(true)
+    dropped.enableBody(true, x, y, true, true)
+		this.items.push(dropped)
+
+		this.tweens.add({
+			targets: dropped,
+			alpha: 0,
+			scale: 0.8,
+			duration: 900,
+			onComplete: () => {
+				dropped.destroy()
+			}
+    })
+		this.hit.play()
 	}
 	handleCoffeePickup(cart, coffee) {
 		this.powerup.play()
@@ -362,9 +386,13 @@ class Mall extends Phaser.Scene {
 	update() {
 		if (this.energySystem.currentEnergy == 0) {
 			this.gameEnd = true
+			this.bgm.stop()
 			this.game.events.emit('gameEnd')
 		}
 		if (!this.gameEnd) {
+			if(this.energySystem.currentEnergy <= 60) {
+				this.bgm.setRate(1.2)
+			}
 			const dir = new Phaser.Math.Vector2(0)
 
 			if (this.cursors.left.isDown || this.wasd.left.isDown) {

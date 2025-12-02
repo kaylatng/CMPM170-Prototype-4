@@ -80,7 +80,8 @@ class HUD extends Phaser.Scene {
 		this.scoreText.setOrigin(0.5, 0.5)
 		this.scoreText.setDepth(1003)
 
-    this.itemsText = this.add.text(barX, barY + 60, 'Items: 0', {
+		this.items = 0
+    this.itemsText = this.add.text(barX, barY + 60, 'Items Collected: 0', {
 			fontSize: '18px',
 			fontFamily: 'Arial, sans-serif',
 			color: '#ffffff',
@@ -104,7 +105,7 @@ class HUD extends Phaser.Scene {
       //   this.updateScore(this.mallScene.score)
       // }
       if (this.mallScene.items) {
-        this.updateItemCount(this.mallScene.items.length)
+        // this.updateItemCount(this.items)
       }
       if (this.mallScene.energySystem) {
         this.updateEnergyBar(
@@ -118,7 +119,7 @@ class HUD extends Phaser.Scene {
 		this.endbg = this.add.rectangle(400, 300, 800, 800, 0x000000)
     this.endbg.alpha = 1
 
-		const endText = this.add.text(centerX, centerY, 'You have run out of energy :( \n GAME OVER', {
+		const endText = this.add.text(centerX, centerY - 20, 'GAME OVER\nYou have run out of energy :(', {
 			fontSize: '28px',
 			fontFamily: 'Arial, sans-serif',
 			color: '#ff3333',
@@ -127,8 +128,32 @@ class HUD extends Phaser.Scene {
 			fontStyle: 'bold',
 			align: "center"
 		})
+
+		const endTextSub = this.add.text(centerX, centerY + 60, 'Press Space to play again', {
+			fontSize: '40px',
+			fontFamily: 'Arial, sans-serif',
+			color: '#ff3333',
+			stroke: '#ffffffff',
+			strokeThickness: 5,
+			fontStyle: 'bold',
+			align: "center"
+		})
+		this.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration: 2000,
+      yoyo: true,
+      onUpdate: (tween) => {
+          const v = tween.getValue();
+          endTextSub.setFontSize(40 + v * 5);
+      },
+      repeat: -1,
+    });
+
+		endTextSub.setOrigin(0.5, 0.5)
 		endText.setOrigin(0.5, 0.5)
 		this.endGroup.add(endText)
+		this.endGroup.add(endTextSub)
 		this.endGroup.add(this.endbg)
     this.endGroup.setVisible(false)
   }
@@ -241,9 +266,17 @@ class HUD extends Phaser.Scene {
 		})
 	}
 
-  updateItemCount(itemsRemaining) {
-    this.itemsText.setText(`Items: ${itemsRemaining}`)
-}
+  updateItemCount() {
+		this.items = this.items + 1
+    this.itemsText.setText(`Items Collected: ${this.items}`)
+	}
+
+	loseItem(){
+		if (this.items >= 1) {
+			this.items = this.items - 1
+    	this.itemsText.setText(`Items Collected: ${this.items}`)
+		}
+	}
 
 	showNpcHit() {
 		const centerX = this.cameras.main.width / 2
@@ -271,6 +304,7 @@ class HUD extends Phaser.Scene {
 				popup.destroy()
 			}
 		})
+		this.loseItem()
 	}
 
 	gameEndScreen(){

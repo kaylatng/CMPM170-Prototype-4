@@ -9,7 +9,7 @@ class Item extends Phaser.Physics.Arcade.Sprite {
       },
       printer: {
         texture: 'item_printer',
-        weight: 0.9,
+        weight: 0.7,
         score: 20,
         multiplier: 1.07
       },
@@ -26,7 +26,7 @@ class Item extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, config.texture)
 
     scene.add.existing(this)
-    scene.physics.add.existing(this, true) // static body
+    scene.physics.add.existing(this, this.isStatic)
 
     this.setOrigin(0.5, 0.5)
 
