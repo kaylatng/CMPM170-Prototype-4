@@ -9,6 +9,9 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
     
     this.cartMass = 1.0
     this.baseMass = 1
+
+    this.filled = false
+
     
     this.updatePhysicsProperties()
     
@@ -44,11 +47,21 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
   setMass(mass) {
     this.cartMass = Math.max(0, mass)
     this.updatePhysicsProperties()
+    if (this.cartMass > 1.0) {
+      this.filled = true
+    } else {
+      this.filled = false
+    }
   }
 
   adjustMass(delta) {
     this.cartMass = Math.max(0, this.cartMass + delta)
     this.updatePhysicsProperties()
+    if (this.cartMass > 1.0) {
+      this.filled = true
+    } else {
+      this.filled = false
+    }
   }
 
   attachPlayer(player) {
@@ -165,25 +178,41 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
           // Frame 1: Top-down view (for up/down)
           switch(this.currentFacing) {
             case 'left':
-              this.setFrame(0) // Side view
+              if (this.filled) {
+                this.setFrame(2) // Side view filled
+              } else {
+                this.setFrame(0) // Side view empty
+              }
               this.targetRotation = 0
               this.setFlipX(false)
               this.setFlipY(false)
               break
             case 'right':
-              this.setFrame(0) // Side view
+              if (this.filled) {
+                this.setFrame(2) // Side view filled
+              } else {
+                this.setFrame(0) // Side view empty
+              }
               this.targetRotation = 0
               this.setFlipX(true) // Flip horizontally
               this.setFlipY(false)
               break
             case 'down':
-              this.setFrame(1) // Top-down view
+              if (this.filled) {
+                this.setFrame(3)
+              } else {
+                this.setFrame(1)
+              }
               this.targetRotation = 0
               this.setFlipX(false)
               this.setFlipY(true) // Flip vertically so handle faces up (toward player)
               break
             case 'up':
-              this.setFrame(1) // Top-down view
+              if (this.filled) {
+                this.setFrame(3)
+              } else {
+                this.setFrame(1)
+              }
               this.targetRotation = 0
               this.setFlipX(false)
               this.setFlipY(false) // No flip - handle faces down (toward player)
