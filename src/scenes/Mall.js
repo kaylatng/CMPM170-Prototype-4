@@ -139,7 +139,7 @@ class Mall extends Phaser.Scene {
 		this.createMassUI()
 		// Score UI
 		this.score = 0
-		// this.createScoreUI()
+		this.gameEnd = false
 	}
 
 	createMassUI() {
@@ -360,61 +360,67 @@ class Mall extends Phaser.Scene {
 		coffee.destroy()
 	}
 	update() {
-		const dir = new Phaser.Math.Vector2(0)
-
-		if (this.cursors.left.isDown || this.wasd.left.isDown) {
-    	dir.x = -1
-		} else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-			dir.x = 1
+		if (this.energySystem.currentEnergy == 0) {
+			this.gameEnd = true
+			this.game.events.emit('gameEnd')
 		}
+		if (!this.gameEnd) {
+			const dir = new Phaser.Math.Vector2(0)
 
-		if (this.cursors.up.isDown || this.wasd.up.isDown) {
-    	dir.y = -1
-		} else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-    	dir.y = 1
-		}
+			if (this.cursors.left.isDown || this.wasd.left.isDown) {
+				dir.x = -1
+			} else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+				dir.x = 1
+			}
 
-		dir.normalize()
+			if (this.cursors.up.isDown || this.wasd.up.isDown) {
+				dir.y = -1
+			} else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+				dir.y = 1
+			}
 
-		// NPC follow
-		/*if (this.npcs) {
-			this.npcs.children.iterate(npc => {
-				if (!npc) return
-				const speed = 60
-				this.physics.moveToObject(npc, this.cart, speed)
-			})
-		}*/
+			dir.normalize()
 
-		if (this.energySystem) {
-			this.energySystem.update(this.game.loop.delta)
-		}
+			// NPC follow
+			/*if (this.npcs) {
+				this.npcs.children.iterate(npc => {
+					if (!npc) return
+					const speed = 60
+					this.physics.moveToObject(npc, this.cart, speed)
+				})
+			}*/
 
-		// Coffee buff countdown
-		if (this.coffeeActive) {
-			this.coffeeTimer -= this.game.loop.delta / 1000  // ms → seconds
+			if (this.energySystem) {
+				this.energySystem.update(this.game.loop.delta)
+			}
 
-			if (this.coffeeTimer <= 0) {
-				this.coffeeActive = false
-				this.coffeeTimer = 0
+			// Coffee buff countdown
+			if (this.coffeeActive) {
+				this.coffeeTimer -= this.game.loop.delta / 1000  // ms → seconds
 
-				// restore the mass we removed
-				if (this.coffeeMassBonus > 0) {
-					this.cart.adjustMass(this.coffeeMassBonus)
-					this.coffeeMassBonus = 0
-				}
+				if (this.coffeeTimer <= 0) {
+					this.coffeeActive = false
+					this.coffeeTimer = 0
 
-				// update UI
-				const massText = document.getElementById('massText')
-				if (massText) {
-					massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
+					// restore the mass we removed
+					if (this.coffeeMassBonus > 0) {
+						this.cart.adjustMass(this.coffeeMassBonus)
+						this.coffeeMassBonus = 0
+					}
+
+					// update UI
+					const massText = document.getElementById('massText')
+					if (massText) {
+						massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
+					}
 				}
 			}
+
+			const speedMultiplier = this.energySystem ? this.energySystem.getSpeedMultiplier() : 1
+
+			// Push the cart instead of moving player directly
+			this.cart.push(dir, speedMultiplier)
+			this.cart.update()
 		}
-
-		const speedMultiplier = this.energySystem ? this.energySystem.getSpeedMultiplier() : 1
-
-		// Push the cart instead of moving player directly
-		this.cart.push(dir, speedMultiplier)
-		this.cart.update()
 	}
 }

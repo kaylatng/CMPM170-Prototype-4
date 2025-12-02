@@ -91,12 +91,13 @@ class HUD extends Phaser.Scene {
 		this.itemsText.setOrigin(0.5, 0.5)
 		this.itemsText.setDepth(1003)
 		
-	this.game.events.on('updateEnergy', this.updateEnergyBar, this)
-	this.game.events.on('energyBoost', this.showEnergyBoost, this)
+		this.game.events.on('updateEnergy', this.updateEnergyBar, this)
+		this.game.events.on('energyBoost', this.showEnergyBoost, this)
     this.game.events.on('updateScore', this.updateScore, this)
     this.game.events.on('massIncrease', this.showMassIncrease, this)
     this.game.events.on('updateItemCount', this.updateItemCount, this)
     this.game.events.on('npcHit', this.showNpcHit, this)
+    this.game.events.on('gameEnd', this.gameEndScreen, this)
 	
     if (this.mallScene) {
       // if (this.mallScene.score !== undefined) {
@@ -112,6 +113,24 @@ class HUD extends Phaser.Scene {
         )
       }
     }
+
+		this.endGroup = this.add.group();
+		this.endbg = this.add.rectangle(400, 300, 800, 800, 0x000000)
+    this.endbg.alpha = 1
+
+		const endText = this.add.text(centerX, centerY, 'You have run out of energy :( \n GAME OVER', {
+			fontSize: '28px',
+			fontFamily: 'Arial, sans-serif',
+			color: '#ff3333',
+			stroke: '#ffffffff',
+			strokeThickness: 5,
+			fontStyle: 'bold',
+			align: "center"
+		})
+		endText.setOrigin(0.5, 0.5)
+		this.endGroup.add(endText)
+		this.endGroup.add(this.endbg)
+    this.endGroup.setVisible(false)
   }
 
 	updateEnergyBar(currentEnergy, maxEnergy) {
@@ -254,6 +273,10 @@ class HUD extends Phaser.Scene {
 		})
 	}
 
+	gameEndScreen(){
+    this.endGroup.setVisible(true)
+	}
+
 	shutdown() {
 		this.game.events.off('updateEnergy', this.updateEnergyBar, this)
 		this.game.events.off('energyBoost', this.showEnergyBoost, this)
@@ -261,5 +284,6 @@ class HUD extends Phaser.Scene {
     this.game.events.on('massIncrease', this.showMassIncrease, this)
     this.game.events.off('updateItemCount', this.updateItemCount, this)
     this.game.events.off('npcHit', this.showNpcHit, this)
+    this.game.events.off('gameEnd', this.gameEndScreen, this)
 	}
 }

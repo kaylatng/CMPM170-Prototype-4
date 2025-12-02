@@ -557,6 +557,30 @@
                 {
                  "ellipse":true,
                  "height":0,
+                 "id":7,
+                 "name":"coffeeSpawn",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":200,
+                 "y":800
+                },
+                {
+                 "ellipse":true,
+                 "height":0,
+                 "id":7,
+                 "name":"coffeeSpawn",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":720,
+                 "y":830
+                },
+                {
+                 "ellipse":true,
+                 "height":0,
                  "id":8,
                  "name":"coffeeSpawn",
                  "rotation":0,
