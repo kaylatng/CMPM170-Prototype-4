@@ -312,12 +312,13 @@ class HUD extends Phaser.Scene {
 	}
 
 	shutdown() {
+		// Remove all event listeners to prevent stacking on restart
 		this.game.events.off('updateEnergy', this.updateEnergyBar, this)
 		this.game.events.off('energyBoost', this.showEnergyBoost, this)
-    this.game.events.off('updateScore', this.updateScore, this)
-    this.game.events.on('massIncrease', this.showMassIncrease, this)
-    this.game.events.off('updateItemCount', this.updateItemCount, this)
-    this.game.events.off('npcHit', this.showNpcHit, this)
-    this.game.events.off('gameEnd', this.gameEndScreen, this)
+		this.game.events.off('updateScore', this.updateScore, this)
+		this.game.events.off('massIncrease', this.showMassIncrease, this)
+		this.game.events.off('updateItemCount', this.updateItemCount, this)
+		this.game.events.off('npcHit', this.showNpcHit, this)
+		this.game.events.off('gameEnd', this.gameEndScreen, this)
 	}
 }

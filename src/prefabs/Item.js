@@ -26,7 +26,7 @@ class Item extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, config.texture)
 
     scene.add.existing(this)
-    scene.physics.add.existing(this, this.isStatic)
+    scene.physics.add.existing(this, true) // static body
 
     this.setOrigin(0.5, 0.5)
 
@@ -52,6 +52,7 @@ class Item extends Phaser.Physics.Arcade.Sprite {
     this.weight = config.weight
     this.score = config.score
     this.multiplier = config.multiplier
+    this.collected = false // prevent double pickup
 
     // for respawn
     this.respawnTime = 3000 // 3 seconds
@@ -70,6 +71,9 @@ class Item extends Phaser.Physics.Arcade.Sprite {
   getType() { return this.itemType }
 
   collect() {
+    if (this.collected) return false // already collected
+    this.collected = true
+    
     // hide + disable physics
     this.setVisible(false)
     this.disableBody(true, true)
@@ -78,10 +82,12 @@ class Item extends Phaser.Physics.Arcade.Sprite {
     this.scene.time.delayedCall(this.respawnTime, () => {
       this.respawn()
     })
+    return true
   }
 
   respawn() {
     // re-enable at original position
+    this.collected = false
     this.enableBody(true, this.startX, this.startY, true, true)
     this.setVisible(true)
   }
