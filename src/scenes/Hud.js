@@ -48,7 +48,7 @@ class HUD extends Phaser.Scene {
 		this.barWidth = barWidth
 		this.barHeight = barHeight
 		
-		this.energyIcon = this.add.text(barX - barWidth / 2 - 35, barY, '☕', {
+		this.energyIcon = this.add.text(barX - barWidth / 2 - 15, barY, '⚡', {
 			fontSize: '24px',
 			fontFamily: 'Arial, sans-serif',
 			color: '#ffffff',
@@ -69,7 +69,7 @@ class HUD extends Phaser.Scene {
 		this.energyText.setOrigin(0.5, 0.5)
 		this.energyText.setDepth(1003)
 
-    this.scoreText = this.add.text(barX, barY + 40, 'Score: 0', {
+    this.scoreText = this.add.text(barX, barY + 30, 'Score: 0', {
 			fontSize: '20px',
 			fontFamily: 'Arial, sans-serif',
 			color: '#ffffff',
@@ -79,11 +79,39 @@ class HUD extends Phaser.Scene {
 		})
 		this.scoreText.setOrigin(0.5, 0.5)
 		this.scoreText.setDepth(1003)
+
+    this.itemsText = this.add.text(barX, barY + 60, 'Items: 0', {
+			fontSize: '18px',
+			fontFamily: 'Arial, sans-serif',
+			color: '#ffffff',
+			stroke: '#000000',
+			strokeThickness: 4,
+			fontStyle: 'bold'
+		})
+		this.itemsText.setOrigin(0.5, 0.5)
+		this.itemsText.setDepth(1003)
 		
 		this.game.events.on('updateEnergy', this.updateEnergyBar, this)
 		this.game.events.on('energyBoost', this.showEnergyBoost, this)
     this.game.events.on('updateScore', this.updateScore, this)
-	}
+    this.game.events.on('massIncrease', this.showMassIncrease, this)
+    this.game.events.on('updateItemCount', this.updateItemCount, this)
+	
+    if (this.mallScene) {
+      // if (this.mallScene.score !== undefined) {
+      //   this.updateScore(this.mallScene.score)
+      // }
+      if (this.mallScene.items) {
+        this.updateItemCount(this.mallScene.items.length)
+      }
+      if (this.mallScene.energySystem) {
+        this.updateEnergyBar(
+          this.mallScene.energySystem.getCurrentEnergy(), 
+          this.mallScene.energySystem.maxEnergy
+        )
+      }
+    }
+  }
 
 	updateEnergyBar(currentEnergy, maxEnergy) {
 		const percentage = currentEnergy / maxEnergy
@@ -165,8 +193,43 @@ class HUD extends Phaser.Scene {
 		})
 	}
 
+  showMassIncrease() {
+		const centerX = this.cameras.main.width / 2
+		const centerY = this.cameras.main.height / 2
+
+		const popup = this.add.text(centerX, centerY, 'Cart Load ⬆️', {
+			fontSize: '24px',
+			fontFamily: 'Arial, sans-serif',
+			color: '#ff6b6b',
+			stroke: '#000000',
+			strokeThickness: 4,
+			fontStyle: 'bold'
+		})
+		popup.setOrigin(0.5, 0.5)
+		popup.setDepth(2000)
+		
+		this.tweens.add({
+			targets: popup,
+			y: centerY - 100,
+			alpha: 0,
+			scale: 1.5,
+			duration: 2000,
+			ease: 'Power2',
+			onComplete: () => {
+				popup.destroy()
+			}
+		})
+	}
+
+  updateItemCount(itemsRemaining) {
+    this.itemsText.setText(`Items: ${itemsRemaining}`)
+}
+
 	shutdown() {
 		this.game.events.off('updateEnergy', this.updateEnergyBar, this)
 		this.game.events.off('energyBoost', this.showEnergyBoost, this)
+    this.game.events.off('updateScore', this.updateScore, this)
+    this.game.events.on('massIncrease', this.showMassIncrease, this)
+    this.game.events.off('updateItemCount', this.updateItemCount, this)
 	}
 }

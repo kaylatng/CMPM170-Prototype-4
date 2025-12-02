@@ -516,7 +516,43 @@
                  "visible":true,
                  "width":0,
                  "x":288,
-                 "y":467.333333333333
+                 "y":680
+                }, 
+                {
+                 "ellipse":true,
+                 "height":0,
+                 "id":7,
+                 "name":"coffeeSpawn",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":560,
+                 "y":445
+                }, 
+                {
+                 "ellipse":true,
+                 "height":0,
+                 "id":7,
+                 "name":"coffeeSpawn",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":390,
+                 "y":420
+                }, 
+                {
+                 "ellipse":true,
+                 "height":0,
+                 "id":7,
+                 "name":"coffeeSpawn",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":340,
+                 "y":700
                 }, 
                 {
                  "ellipse":true,

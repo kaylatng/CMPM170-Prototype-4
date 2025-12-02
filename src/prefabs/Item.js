@@ -36,20 +36,20 @@ class Item extends Phaser.Physics.Arcade.Sprite {
     // Fine-tuned collision boxes to perfectly align with visible sprites
     switch(type) {
       case 'monitor':
-        this.body.setSize(16, 14) // Monitor screen
-        this.body.setOffset(0, 34)
+        this.body.setSize(16, 16) // Monitor screen
+        this.body.setOffset(0, 0)
         break
       case 'printer':
-        this.body.setSize(14, 16) // Printer body
-        this.body.setOffset(0, 18)
+        this.body.setSize(16, 16) // Printer body
+        this.body.setOffset(0, 0)
         break
       case 'desklight':
-        this.body.setSize(12, 14) // Lamp
-        this.body.setOffset(0, 18) // Adjusted down slightly
+        this.body.setSize(16, 16) // Lamp
+        this.body.setOffset(0, 0) // Adjusted down slightly
         break
       default:
         this.body.setSize(16, 16)
-        this.body.setOffset(8, 16)
+        this.body.setOffset(0, 0)
     }
 
     // Store item properties

@@ -34,6 +34,8 @@ class Mall extends Phaser.Scene {
 		this.load.image('energyBar', 'valuefull.png')
 
     this.load.audio('bgm', 'audio/bgm.mp3')
+    this.load.audio('pickup', 'audio/pickup.wav')
+    this.load.audio('powerup', 'audio/coffee.wav')
 
 		this.load.image('tilesetImage', 'MarketSet_Tileset.png')
 		this.load.tilemapTiledJSON('tilemapJSON', 'grocerystore.json')
@@ -46,6 +48,16 @@ class Mall extends Phaser.Scene {
     });
 		// COMMENT THIS TO MUTE MUSIC
     this.bgm.play()
+
+		this.pickup = this.sound.add('pickup', {
+      volume: 0.2,
+      loop: false,
+    });
+
+		this.powerup = this.sound.add('powerup', {
+      volume: 0.2,
+      loop: false,
+    });
 
 		// TILEMAP
 		const map = this.add.tilemap('tilemapJSON')
@@ -201,6 +213,7 @@ class Mall extends Phaser.Scene {
 			const item = new Item(this, x, y, type)
 			this.items.push(item)
 		})
+		this.game.events.emit('updateItemCount', this.items.length)
 	}
 	createCoffeeFromMap(map) {
 		const coffeeObjects = map.getObjectLayer('Coffee')?.objects || []
@@ -247,6 +260,8 @@ class Mall extends Phaser.Scene {
 		// }
 
 		this.game.events.emit('updateScore', this.score)
+		this.game.events.emit('massIncrease')
+		
 		// Adjust cart mass
 		cart.adjustMass(weight)
 
@@ -255,12 +270,23 @@ class Mall extends Phaser.Scene {
 		if (massText) {
 			massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
-
+		this.pickup.play()
 		item.destroy()
+
+		const index = this.items.indexOf(item)
+		if (index > -1) {
+			this.items.splice(index, 1)
+		}
+		this.game.events.emit('updateItemCount', this.items.length)
 	}
 
 	handleNpcItemPickup(item, _npc) {
 		item.destroy()
+		const index = this.items.indexOf(item)
+		if (index > -1) {
+			this.items.splice(index, 1)
+		}
+		this.game.events.emit('updateItemCount', this.items.length)
 	}
 
 	handleNpcHit(cart, npc) {
@@ -307,9 +333,10 @@ class Mall extends Phaser.Scene {
 		}
 	}
 	handleCoffeePickup(cart, coffee) {
+		this.powerup.play()
 		const massBoost = coffee.getData('massBoost') || 0.5
 
-		const energyBoost = 30 // gives 30 energy per coffee
+		const energyBoost = 50
 		this.energySystem.addEnergy(energyBoost)
 
 		// timer reset when already have coffee
@@ -341,7 +368,6 @@ class Mall extends Phaser.Scene {
 		if (massText) {
 			massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
-
 		coffee.destroy()
 	}
 	update() {
