@@ -227,7 +227,7 @@ class Mall extends Phaser.Scene {
 			const item = new Item(this, x, y, type)
 			this.items.push(item)
 		})
-		this.game.events.emit('updateItemCount', this.items.length)
+		// this.game.events.emit('updateItemCount', this.items.length)
 	}
 	createCoffeeFromMap(map) {
 		const coffeeObjects = map.getObjectLayer('Coffee')?.objects || []
