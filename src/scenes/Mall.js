@@ -85,6 +85,18 @@ class Mall extends Phaser.Scene {
 		this.createCoffeeFromMap(map)
 
 		this.energySystem = new Energy(this, 100)
+		
+		// Clear any existing game events before launching HUD to prevent stacking
+		this.game.events.off('updateEnergy')
+		this.game.events.off('energyBoost')
+		this.game.events.off('updateScore')
+		this.game.events.off('massIncrease')
+		this.game.events.off('updateItemCount')
+		this.game.events.off('npcHit')
+		this.game.events.off('gameEnd')
+		
+		// Stop HUD if it's already running, then launch fresh
+		this.scene.stop('hudScene')
 		this.scene.launch('hudScene')
 
 		const npcSpawns = map.filterObjects('Spawns', obj => obj.name === 'npcSpawn')
@@ -143,8 +155,8 @@ class Mall extends Phaser.Scene {
 		})
 		this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
 		this.spaceKey.on('down', () => {
-			this.scene.start('mallScene');
 			this.bgm.stop()
+			this.scene.start('mallScene')
 		});
 
 		// Mass adjustment buttons
@@ -244,6 +256,9 @@ class Mall extends Phaser.Scene {
 	}
 
 	handleItemPickup(cart, item) {
+		// Try to collect first - returns false if already collected (prevents double pickup)
+		if (!item.collect()) return
+
 		// Use Item prefab methods instead of getData
 		const weight = item.getWeight()
 		const score = item.getScore()
@@ -282,7 +297,6 @@ class Mall extends Phaser.Scene {
 		}
 
 		this.pickup.play()
-		item.collect()
 	}
 	handleNpcItemPickup(item, _npc) {
 		item.collect()
