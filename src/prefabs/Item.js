@@ -1,6 +1,5 @@
 class Item extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, type = 'monitor') {
-    // Item type configurations
     const itemConfig = {
       monitor: {
         texture: 'item_monitor',
@@ -22,70 +21,76 @@ class Item extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    // Get config for this type (default to monitor if invalid)
     const config = itemConfig[type] || itemConfig.monitor
 
-    // Create sprite with appropriate texture
     super(scene, x, y, config.texture)
 
     scene.add.existing(this)
-    scene.physics.add.existing(this, true) // true = static body
+    scene.physics.add.existing(this, true) // static body
 
     this.setOrigin(0.5, 0.5)
-    
-    // Fine-tuned collision boxes to perfectly align with visible sprites
+
     switch(type) {
       case 'monitor':
-        this.body.setSize(16, 16) // Monitor screen
+        this.body.setSize(16, 16)
         this.body.setOffset(0, 0)
         break
       case 'printer':
-        this.body.setSize(16, 16) // Printer body
+        this.body.setSize(16, 16)
         this.body.setOffset(0, 0)
         break
       case 'desklight':
-        this.body.setSize(16, 16) // Lamp
-        this.body.setOffset(0, 0) // Adjusted down slightly
+        this.body.setSize(16, 16)
+        this.body.setOffset(0, 0)
         break
       default:
         this.body.setSize(16, 16)
         this.body.setOffset(0, 0)
     }
 
-    // Store item properties
     this.itemType = type
     this.weight = config.weight
     this.score = config.score
     this.multiplier = config.multiplier
 
-    // Set data (for compatibility with existing code)
+    // for respawn
+    this.respawnTime = 3000 // 3 seconds
+    this.startX = x
+    this.startY = y
+
     this.setData('type', type)
     this.setData('weight', config.weight)
     this.setData('score', config.score)
     this.setData('multiplier', config.multiplier)
   }
 
-  // Get item properties
-  getWeight() {
-    return this.weight
+  getWeight() { return this.weight }
+  getScore() { return this.score }
+  getMultiplier() { return this.multiplier }
+  getType() { return this.itemType }
+
+  collect() {
+    // hide + disable physics
+    this.setVisible(false)
+    this.disableBody(true, true)
+
+    // respawn after 3 sec
+    this.scene.time.delayedCall(this.respawnTime, () => {
+      this.respawn()
+    })
   }
 
-  getScore() {
-    return this.score
+  respawn() {
+    // re-enable at original position
+    this.enableBody(true, this.startX, this.startY, true, true)
+    this.setVisible(true)
   }
 
-  getMultiplier() {
-    return this.multiplier
-  }
-
-  getType() {
-    return this.itemType
-  }
-
-  // Static method to get random item type
   static getRandomType() {
     const types = ['monitor', 'printer', 'desklight']
     return Phaser.Utils.Array.GetRandom(types)
   }
 }
+
+
 

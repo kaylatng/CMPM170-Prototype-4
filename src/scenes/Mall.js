@@ -255,40 +255,24 @@ class Mall extends Phaser.Scene {
 		// Add score
 		this.score += Math.floor(score * totalMultiplier)
 
-		// update score
-		// const scoreSpan = document.getElementById('scoreValue')
-		// if (scoreSpan) {
-		// 	scoreSpan.textContent = this.score
-		// }
-
+		// this.updateScoreUI() if you re-enable it later
 		this.game.events.emit('updateScore', this.score)
 		this.game.events.emit('massIncrease')
-		
+
 		// Adjust cart mass
 		cart.adjustMass(weight)
 
-		// update mass
+		// update mass UI
 		const massText = document.getElementById('massText')
 		if (massText) {
 			massText.innerText = `Mass: ${this.cart.getMass().toFixed(1)}`
 		}
+
 		this.pickup.play()
-		item.destroy()
-
-		const index = this.items.indexOf(item)
-		if (index > -1) {
-			this.items.splice(index, 1)
-		}
-		this.game.events.emit('updateItemCount', this.items.length)
+		item.collect()
 	}
-
 	handleNpcItemPickup(item, _npc) {
-		item.destroy()
-		const index = this.items.indexOf(item)
-		if (index > -1) {
-			this.items.splice(index, 1)
-		}
-		this.game.events.emit('updateItemCount', this.items.length)
+		item.collect()
 	}
 
 	handleNpcHit(player, npc) {
