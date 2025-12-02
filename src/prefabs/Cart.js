@@ -95,7 +95,7 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  push(dir) {
+  push(dir, speedMultiplier = 1) {
     if (!this.player) return
 
 
@@ -115,7 +115,7 @@ class Cart extends Phaser.Physics.Arcade.Sprite {
         }
       }
       // Apply acceleration with turn resistance
-      const effectiveAccel = this.acceleration * turnResistance
+      const effectiveAccel = this.acceleration * turnResistance * speedMultiplier
       
       this.body.setAcceleration(
         dir.x * effectiveAccel, 

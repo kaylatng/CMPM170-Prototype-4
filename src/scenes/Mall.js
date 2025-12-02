@@ -109,8 +109,10 @@ class Mall extends Phaser.Scene {
 		  this.physics.add.collider(this.npcs, item, this.handleNpcItemPickup, null, this)
 		})
 
-		// Cart gets hit by npcs
-		this.physics.add.collider(this.cart, this.npcs, this.handleNpcHit, null, this)
+		// Player gets hit by npcs (not cart)
+		this.physics.add.collider(this.player, this.npcs, this.handleNpcHit, null, this)
+		// Cart collides with NPCs but doesn't trigger item loss
+		this.physics.add.collider(this.cart, this.npcs)
 		this.physics.add.collider(this.npcs, terrainLayer)
 		this.physics.add.collider(this.npcs, wallLayer)
 
@@ -289,11 +291,14 @@ class Mall extends Phaser.Scene {
 		this.game.events.emit('updateItemCount', this.items.length)
 	}
 
-	handleNpcHit(cart, npc) {
+	handleNpcHit(player, npc) {
 		// if no items
 		if (!this.cart.inventory || this.cart.inventory.length === 0) {
 			return
 		}
+
+		// Emit hit event for popup
+		this.game.events.emit('npcHit')
 
 		// find the highest-score item
 		let maxIndex = 0
@@ -313,7 +318,7 @@ class Mall extends Phaser.Scene {
 		this.score = Math.max(0, this.score - lostItem.score)
 
 		// adjust cart mass
-		cart.adjustMass(-lostItem.weight)
+		this.cart.adjustMass(-lostItem.weight)
 
 		// lose the multiplie
 		this.cart.inventory.forEach(it => {
@@ -425,7 +430,7 @@ class Mall extends Phaser.Scene {
 		const speedMultiplier = this.energySystem ? this.energySystem.getSpeedMultiplier() : 1
 
 		// Push the cart instead of moving player directly
-		this.cart.push(dir)
+		this.cart.push(dir, speedMultiplier)
 		this.cart.update()
 	}
 }

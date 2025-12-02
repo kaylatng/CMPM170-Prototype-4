@@ -91,11 +91,12 @@ class HUD extends Phaser.Scene {
 		this.itemsText.setOrigin(0.5, 0.5)
 		this.itemsText.setDepth(1003)
 		
-		this.game.events.on('updateEnergy', this.updateEnergyBar, this)
-		this.game.events.on('energyBoost', this.showEnergyBoost, this)
+	this.game.events.on('updateEnergy', this.updateEnergyBar, this)
+	this.game.events.on('energyBoost', this.showEnergyBoost, this)
     this.game.events.on('updateScore', this.updateScore, this)
     this.game.events.on('massIncrease', this.showMassIncrease, this)
     this.game.events.on('updateItemCount', this.updateItemCount, this)
+    this.game.events.on('npcHit', this.showNpcHit, this)
 	
     if (this.mallScene) {
       // if (this.mallScene.score !== undefined) {
@@ -225,11 +226,40 @@ class HUD extends Phaser.Scene {
     this.itemsText.setText(`Items: ${itemsRemaining}`)
 }
 
+	showNpcHit() {
+		const centerX = this.cameras.main.width / 2
+		const centerY = this.cameras.main.height / 2
+		
+		const popup = this.add.text(centerX, centerY, '💥 Hit!', {
+			fontSize: '28px',
+			fontFamily: 'Arial, sans-serif',
+			color: '#ff3333',
+			stroke: '#000000',
+			strokeThickness: 5,
+			fontStyle: 'bold'
+		})
+		popup.setOrigin(0.5, 0.5)
+		popup.setDepth(2000)
+		
+		this.tweens.add({
+			targets: popup,
+			y: centerY - 80,
+			alpha: 0,
+			scale: 1.8,
+			duration: 1500,
+			ease: 'Power2',
+			onComplete: () => {
+				popup.destroy()
+			}
+		})
+	}
+
 	shutdown() {
 		this.game.events.off('updateEnergy', this.updateEnergyBar, this)
 		this.game.events.off('energyBoost', this.showEnergyBoost, this)
     this.game.events.off('updateScore', this.updateScore, this)
     this.game.events.on('massIncrease', this.showMassIncrease, this)
     this.game.events.off('updateItemCount', this.updateItemCount, this)
+    this.game.events.off('npcHit', this.showNpcHit, this)
 	}
 }
